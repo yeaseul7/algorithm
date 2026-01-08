@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기차 애니메이션</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #FFFFFF;
+            overflow: hidden;
+        }
+        canvas {
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="trainCanvas" width="1200" height="400"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('trainCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let trainX = -450; // 기차의 초기 x 위치 (기차가 길어서 더 왼쪽에서 시작)
+        const trainSpeed = 2; // 기차 속도
+        
+        // 선로 이미지 로드
+        const trackImage = new Image();
+        trackImage.src = '2ce70ba6-1967-4534-9f66-5aa0d7ece017.png';
+        let trackImageLoaded = false;
+        
+        trackImage.onload = function() {
+            trackImageLoaded = true;
+        };
+        
+        // 기차 그리기 함수
+        function drawTrain(x, y) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#000';
+            
+            // ========== 기관차 ==========
+            // 기관차 - 빨간색 몸체 (둥근 앞부분)
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(x + 30, y + 50, 30, Math.PI / 2, Math.PI * 1.5, false);
+            ctx.lineTo(x + 80, y + 20);
+            ctx.lineTo(x + 80, y + 80);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 기관차 - 노란 캐빈
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.moveTo(x + 80, y + 20);
+            ctx.lineTo(x + 80, y + 80);
+            ctx.lineTo(x + 130, y + 80);
+            ctx.lineTo(x + 130, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 기관차 - 아치형 창문
+            ctx.fillStyle = '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(x + 105, y + 50, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 기관차 - 초록색 개구리 운전사
+            ctx.fillStyle = '#00FF00';
+            ctx.beginPath();
+            ctx.arc(x + 105, y + 50, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // 개구리 눈
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + 100, y + 45, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 110, y + 45, 2, 0, Math.PI * 2);
+            ctx.fill();
+            // 개구리 입
+            ctx.beginPath();
+            ctx.arc(x + 105, y + 55, 5, 0, Math.PI);
+            ctx.stroke();
+            
+            // 기관차 - 파란 굴뚝
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(x + 90, y - 15, 18, 35);
+            ctx.strokeRect(x + 90, y - 15, 18, 35);
+            
+            // 기관차 바퀴 2개 (중앙에 노란색 원)
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + 30, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + 30, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + 60, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + 60, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 연기 - 흰색 구름
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(x + 99, y - 30, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x + 112, y - 45, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x + 125, y - 55, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            let currentX = x + 140;
+            
+            // ========== 첫 번째 객차 (녹색) ==========
+            // 차량 연결선
+            ctx.beginPath();
+            ctx.moveTo(x + 130, y + 50);
+            ctx.lineTo(currentX, y + 50);
+            ctx.stroke();
+            
+            // 객차 몸체 - 밝은 녹색
+            ctx.fillStyle = '#90EE90';
+            ctx.beginPath();
+            ctx.moveTo(currentX, y + 20);
+            ctx.lineTo(currentX, y + 80);
+            ctx.lineTo(currentX + 90, y + 80);
+            ctx.lineTo(currentX + 90, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 노란색 둥근 상단
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 45, y + 20, 45, Math.PI, 0, false);
+            ctx.lineTo(currentX, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 작은 원형 장식들
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(currentX + 20, y + 35, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0000FF';
+            ctx.beginPath();
+            ctx.arc(currentX + 35, y + 60, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 45, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 창문 - 소년과 토끼
+            ctx.fillStyle = '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 소년 (갈색 머리)
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 45, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // 토끼 (흰색)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 50, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 바퀴 2개
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            currentX += 100;
+            
+            // ========== 두 번째 객차 (파란색) ==========
+            // 차량 연결선
+            ctx.beginPath();
+            ctx.moveTo(currentX - 10, y + 50);
+            ctx.lineTo(currentX, y + 50);
+            ctx.stroke();
+            
+            // 객차 몸체 - 파란색
+            ctx.fillStyle = '#4169E1';
+            ctx.beginPath();
+            ctx.moveTo(currentX, y + 20);
+            ctx.lineTo(currentX, y + 80);
+            ctx.lineTo(currentX + 90, y + 80);
+            ctx.lineTo(currentX + 90, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 노란색 둥근 상단
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 45, y + 20, 45, Math.PI, 0, false);
+            ctx.lineTo(currentX, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 작은 원형 장식들
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 55, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#00FF00';
+            ctx.beginPath();
+            ctx.arc(currentX + 50, y + 40, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 70, y + 60, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 창문 - 코끼리와 곰 인형
+            ctx.fillStyle = '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 코끼리 (회색)
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 50, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // 곰 인형 (갈색)
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 50, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 바퀴 2개
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            currentX += 100;
+            
+            // ========== 세 번째 객차 (분홍색) ==========
+            // 차량 연결선
+            ctx.beginPath();
+            ctx.moveTo(currentX - 10, y + 50);
+            ctx.lineTo(currentX, y + 50);
+            ctx.stroke();
+            
+            // 객차 몸체 - 분홍색
+            ctx.fillStyle = '#FFB6C1';
+            ctx.beginPath();
+            ctx.moveTo(currentX, y + 20);
+            ctx.lineTo(currentX, y + 80);
+            ctx.lineTo(currentX + 90, y + 80);
+            ctx.lineTo(currentX + 90, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 노란색 둥근 상단
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 45, y + 20, 45, Math.PI, 0, false);
+            ctx.lineTo(currentX, y + 20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // 작은 원형 장식들
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(currentX + 20, y + 45, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0000FF';
+            ctx.beginPath();
+            ctx.arc(currentX + 40, y + 60, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#00FF00';
+            ctx.beginPath();
+            ctx.arc(currentX + 70, y + 40, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 창문 - 두 명의 성인
+            ctx.fillStyle = '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 50, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 여성 (갈색 머리)
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(currentX + 30, y + 45, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // 남성 (짧은 머리)
+            ctx.beginPath();
+            ctx.arc(currentX + 60, y + 45, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 바퀴 2개
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 25, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(currentX + 65, y + 80, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 선로 그리기
+        function drawTrack() {
+            if (!trackImageLoaded) return;
+            
+            const trackY = canvas.height - trackImage.height;
+            
+            // 이미지를 반복해서 그리기 (기차와 함께 스크롤)
+            const imageWidth = trackImage.width;
+            const offsetX = (trainX % imageWidth) - imageWidth;
+            
+            // 화면을 채우기 위해 여러 번 그리기
+            for (let x = offsetX; x < canvas.width; x += imageWidth) {
+                ctx.drawImage(trackImage, x, trackY);
+            }
+        }
+        
+        // 애니메이션 루프
+        function animate() {
+            // 화면 지우기
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 선로 그리기
+            drawTrack();
+            
+            // 기차 그리기 (이미지 높이에 맞춰 조정)
+            const trainY = trackImageLoaded ? canvas.height - trackImage.height - 40 : canvas.height - 120;
+            drawTrain(trainX, trainY);
+            
+            // 기차 위치 업데이트
+            trainX += trainSpeed;
+            
+            // 기차가 화면을 벗어나면 다시 시작
+            if (trainX > canvas.width) {
+                trainX = -450;
+            }
+            
+            // 다음 프레임 요청
+            requestAnimationFrame(animate);
+        }
+        
+        // 애니메이션 시작
+        animate();
+    </script>
+</body>
+</html>
